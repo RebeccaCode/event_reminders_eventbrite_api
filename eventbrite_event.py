@@ -14,6 +14,18 @@ class EventBriteEvent(object):
     def get_json_event(self):
         return self.__eventbrite_event__
 
+    def get_event_id(self):
+        return self.__eventbrite_event__.get('id')
+
+    def set_attendees(self, attendee_json_list):
+        self.__eventbrite_event__['attendees'] = attendee_json_list
+
+    def get_attendees_json(self):
+        return self.__eventbrite_event__.get('attendees')
+
+    def clear_attendees_json(self):
+        del self.__eventbrite_event__['attendees']
+
     def days_from_now(self):
         n = datetime.now()
         compare = self.get_start_date()

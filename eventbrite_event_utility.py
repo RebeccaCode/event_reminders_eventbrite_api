@@ -18,6 +18,9 @@ class EventBriteEventUtility(object):
         self.__eventbrite_api_url_events__ = '/'.join(
             [self.__eventbrite_api_url__, 'organizations', self.__eventbrite_organization_id__, 'events'])
 
+        self.__eventbrite_api_url_event_attendees__ = '/'.join(
+            [self.__eventbrite_api_url__, 'events', '{event_id}', 'attendees'])
+
         self.__eventbrite_authentication_header__ = {'Authorization': f'Bearer {self.__eventbrite_private_token__}'}
 
     def get_future_events(self, number_days_forward_to_look=5):
@@ -84,6 +87,15 @@ class EventBriteEventUtility(object):
 
         return result
 
+    def replace_event_attendees(self, eventbrite_event):
+        event_id = eventbrite_event.get_event_id()
+        url = self.__eventbrite_api_url_event_attendees__.format(event_id=event_id)
+        r = requests.get(url,
+                         headers=self.__eventbrite_authentication_header__, verify=False)
+
+        eventbrite_event.set_attendees(json.loads(r.text).get('attendees'))
+        return eventbrite_event
+
     @staticmethod
     def get_max_start(eventbrite_event_json_list):
         max_start = None
@@ -107,10 +119,21 @@ class EventBriteEventUtility(object):
         return min_start
 
     @staticmethod
-    def save_events_to_file(eventbrite_event_list, file_path):
+    def save_event_list_to_file(eventbrite_event_list, file_path):
         json_list = []
         for event in eventbrite_event_list:
             json_list.append(event.get_json_event())
 
         with open(file_path, 'w') as f:
             json.dump(json_list, f)
+
+    @staticmethod
+    def load_events_from_file(file_path):
+        with open(file_path, 'r') as f:
+            json_list = json.load(f)
+
+        result = []
+        for item in json_list:
+            result.append(EventBriteEvent(item))
+
+        return result
